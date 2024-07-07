@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Earthquake Monitor</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="sidebar">
+        <h1>Global Earthquake Monitor</h1>
+        <div id="magnitude-filter">
+            <label for="mag-slider">Minimum Magnitude: <span id="mag-value">0</span></label>
+            <input type="range" id="mag-slider" min="0" max="10" step="0.1" value="0">
+        </div>
+        <div id="time-filter">
+            <label for="time-select">Time Range:</label>
+            <select id="time-select">
+                <option value="hour">Past Hour</option>
+                <option value="day" selected>Past Day</option>
+                <option value="week">Past 7 Days</option>
+                <option value="month">Past 30 Days</option>
+            </select>
+        </div>
+        <div id="depth-filter">
+            <label for="depth-select">Depth Range:</label>
+            <select id="depth-select">
+                <option value="all">All Depths</option>
+                <option value="shallow">Shallow (0-70 km)</option>
+                <option value="intermediate">Intermediate (70-300 km)</option>
+                <option value="deep">Deep (300+ km)</option>
+            </select>
+        </div>
+        <div id="stats">
+            <h2>Earthquake Statistics</h2>
+            <p>Total Earthquakes: <span id="total-quakes">0</span></p>
+            <p>Average Magnitude: <span id="avg-magnitude">0</span></p>
+            <p>Strongest Earthquake: <span id="max-magnitude">0</span></p>
+            <p>Most Recent: <span id="most-recent">N/A</span></p>
+        </div>
+        <div id="legend">
+            <h2>Magnitude Legend</h2>
+            <div class="legend-item"><span class="legend-color" style="background-color: #00FF00;"></span> 0-2 (Minor)</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: #ADFF2F;"></span> 2-4 (Light)</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: #FFD700;"></span> 4-6 (Moderate)</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: #FFA500;"></span> 6-7 (Strong)</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: #FF4500;"></span> 7-8 (Major)</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: #FF0000;"></span> 8+ (Great)</div>
+        </div>
+    </div>
+    <div id="map"></div>
+    <div id="loading" class="hidden">Loading...</div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
