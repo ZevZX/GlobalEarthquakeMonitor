@@ -3,24 +3,142 @@ body, html {
     padding: 0;
     font-family: Arial, sans-serif;
     height: 100%;
+    overflow: hidden;
 }
 
 #sidebar {
     position: absolute;
-    left: 0;
+    right: 0;
     top: 0;
     width: 300px;
     height: 100%;
     background: #f8f9fa;
     padding: 20px;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
     z-index: 1000;
     overflow-y: auto;
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
 }
 
 #map {
     height: 100%;
-    margin-left: 300px;
+    margin-right: 300px;
+    transition: margin-right 0.3s ease-in-out;
+}
+
+#toggle-sidebar {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index: 1001;
+    background: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+#mobile-top-section {
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-width: 768px) {
+    #sidebar {
+        transform: translateX(100%);
+        width: 100%;
+        padding: 15px;
+    }
+
+    #map {
+        margin-right: 0;
+    }
+
+    #toggle-sidebar {
+        display: block;
+    }
+
+    #sidebar.active {
+        transform: translateX(0);
+    }
+
+    h1 {
+        font-size: 20px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    #magnitude-filter, #time-filter {
+        margin-bottom: 15px;
+    }
+
+    #mobile-top-section {
+        flex-direction: row;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    #stats, #legend {
+        font-size: 12px;
+    }
+
+    #stats h2, #legend h2 {
+        font-size: 14px;
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+
+    #stats p {
+        margin: 5px 0;
+    }
+
+    .legend-item {
+        font-size: 10px;
+        margin-bottom: 3px;
+    }
+
+    .legend-color {
+        width: 10px;
+        height: 10px;
+        margin-right: 5px;
+    }
+}
+
+.clickable {
+    cursor: pointer;
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.clickable:hover {
+    color: #0056b3;
+}
+
+#magnitude-filter, #time-filter {
+    margin-bottom: 20px;
+}
+
+#mag-slider, #time-select {
+    width: 100%;
+    max-width: 100%;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.legend-item {
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
 }
 
 h1 {
@@ -104,4 +222,14 @@ label {
 
 #most-recent:hover {
     color: #0056b3;
+}
+
+#magnitude-filter input[type="range"] {
+    width: 100%;
+    margin: 10px 0;
+}
+
+#magnitude-filter label {
+    display: block;
+    margin-top: 10px;
 }

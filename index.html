@@ -9,14 +9,17 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <button id="toggle-sidebar">☰</button>
     <div id="sidebar">
         <h1>Global Earthquake Monitor</h1>
         <div id="magnitude-filter">
-            <label for="mag-slider">Minimum Magnitude: <span id="mag-value">0</span></label>
-            <input type="range" id="mag-slider" min="0" max="10" step="0.1" value="0">
+            <label for="min-mag-slider">Minimum Magnitude: <span id="min-mag-value">0</span></label>
+            <input type="range" id="min-mag-slider" min="0" max="10" step="0.1" value="0">
+            <label for="max-mag-slider">Maximum Magnitude: <span id="max-mag-value">10</span></label>
+            <input type="range" id="max-mag-slider" min="0" max="10" step="0.1" value="10">
         </div>
         <div id="time-filter">
-            <label for="time-select">Time Range:</label>
+            <label for="time-select">Time Range: <span id="time-range-display">Past Day</span></label>
             <select id="time-select">
                 <option value="hour">Past Hour</option>
                 <option value="day" selected>Past Day</option>
@@ -24,21 +27,13 @@
                 <option value="month">Past 30 Days</option>
             </select>
         </div>
-        <div id="depth-filter">
-            <label for="depth-select">Depth Range:</label>
-            <select id="depth-select">
-                <option value="all">All Depths</option>
-                <option value="shallow">Shallow (0-70 km)</option>
-                <option value="intermediate">Intermediate (70-300 km)</option>
-                <option value="deep">Deep (300+ km)</option>
-            </select>
-        </div>
         <div id="stats">
             <h2>Earthquake Statistics</h2>
             <p>Total Earthquakes: <span id="total-quakes">0</span></p>
             <p>Average Magnitude: <span id="avg-magnitude">0</span></p>
-            <p>Strongest Earthquake: <span id="max-magnitude">0</span></p>
-            <p>Most Recent: <span id="most-recent">N/A</span></p>
+            <p>Strongest Earthquake: <span id="max-magnitude" class="clickable">0</span></p>
+            <p>Weakest Earthquake: <span id="min-magnitude" class="clickable">0</span></p>
+            <p>Most Recent: <span id="most-recent" class="clickable">N/A</span></p>
         </div>
         <div id="legend">
             <h2>Magnitude Legend</h2>

@@ -51,7 +51,8 @@ function addEarthquakeMarkers(earthquakes) {
 }
 
 function updateEarthquakeMarkers(earthquakes) {
-    const minMagnitude = parseFloat(document.getElementById('mag-slider').value);
+    const minMagnitude = parseFloat(document.getElementById('min-mag-slider').value);
+    const maxMagnitude = parseFloat(document.getElementById('max-mag-slider').value);
     
     earthquakeLayer.clearLayers();
     heatmapLayer.clearLayers();
@@ -62,7 +63,7 @@ function updateEarthquakeMarkers(earthquakes) {
         const {coordinates} = quake.geometry;
         const {mag, place, time} = quake.properties;
         
-        if (mag >= minMagnitude) {
+        if (mag >= minMagnitude && mag <= maxMagnitude) {
             L.circleMarker([coordinates[1], coordinates[0]], {
                 radius: getMarkerSize(mag),
                 fillColor: getMarkerColor(mag),
@@ -81,7 +82,7 @@ function updateEarthquakeMarkers(earthquakes) {
     });
     
     L.heatLayer(heatmapPoints, {radius: 25}).addTo(heatmapLayer);
-    updateStatistics(earthquakes, minMagnitude);
+    updateStatistics(earthquakes, minMagnitude, maxMagnitude);
 }
 
 function isInDepthRange(depth, range) {
@@ -94,12 +95,29 @@ function isInDepthRange(depth, range) {
 }
 
 function initMagnitudeFilter(earthquakes) {
-    const slider = document.getElementById('mag-slider');
-    const output = document.getElementById('mag-value');
-    output.innerHTML = slider.value;
+    const minSlider = document.getElementById('min-mag-slider');
+    const maxSlider = document.getElementById('max-mag-slider');
+    const minOutput = document.getElementById('min-mag-value');
+    const maxOutput = document.getElementById('max-mag-value');
 
-    slider.oninput = function() {
-        output.innerHTML = this.value;
+    minOutput.innerHTML = minSlider.value;
+    maxOutput.innerHTML = maxSlider.value;
+
+    minSlider.oninput = function() {
+        minOutput.innerHTML = this.value;
+        if (parseFloat(this.value) > parseFloat(maxSlider.value)) {
+            maxSlider.value = this.value;
+            maxOutput.innerHTML = this.value;
+        }
+        updateEarthquakeMarkers(earthquakes);
+    }
+
+    maxSlider.oninput = function() {
+        maxOutput.innerHTML = this.value;
+        if (parseFloat(this.value) < parseFloat(minSlider.value)) {
+            minSlider.value = this.value;
+            minOutput.innerHTML = this.value;
+        }
         updateEarthquakeMarkers(earthquakes);
     }
 }
@@ -109,6 +127,24 @@ function initTimeFilter() {
     select.onchange = async function() {
         allEarthquakes = await getEarthquakeData(this.value);
         updateEarthquakeMarkers(allEarthquakes);
+        updateTimeRangeDisplay(this.value);
+    }
+}
+
+function updateTimeRangeDisplay(timeRange) {
+    const timeRangeDisplay = document.getElementById('time-range-display');
+    if (timeRangeDisplay) {
+        timeRangeDisplay.textContent = getTimeRangeText(timeRange);
+    }
+}
+
+function getTimeRangeText(timeRange) {
+    switch(timeRange) {
+        case 'hour': return 'Past Hour';
+        case 'day': return 'Past Day';
+        case 'week': return 'Past 7 Days';
+        case 'month': return 'Past 30 Days';
+        default: return '';
     }
 }
 
@@ -118,40 +154,62 @@ function initDepthFilter() {
         updateEarthquakeMarkers(allEarthquakes);
     }
 }
-
-function updateStatistics(earthquakes, minMagnitude) {
-    const filteredQuakes = earthquakes.filter(quake => quake.properties.mag >= minMagnitude);
+function updateStatistics(earthquakes, minMagnitude, maxMagnitude) {
+    const filteredQuakes = earthquakes.filter(quake => 
+        quake.properties.mag >= minMagnitude && quake.properties.mag <= maxMagnitude
+    );
     const totalQuakes = filteredQuakes.length;
     const avgMagnitude = filteredQuakes.reduce((sum, quake) => sum + quake.properties.mag, 0) / totalQuakes;
-    const maxMagnitude = Math.max(...filteredQuakes.map(quake => quake.properties.mag));
+    
+    const strongestQuake = filteredQuakes.reduce((strongest, quake) => 
+        quake.properties.mag > strongest.properties.mag ? quake : strongest
+    );
+    const weakestQuake = filteredQuakes.reduce((weakest, quake) => 
+        quake.properties.mag < weakest.properties.mag ? quake : weakest
+    );
     const mostRecentQuake = filteredQuakes.reduce((latest, quake) => 
         quake.properties.time > latest.properties.time ? quake : latest
     );
+
     const mostRecent = moment(mostRecentQuake.properties.time).fromNow();
 
     document.getElementById('total-quakes').textContent = totalQuakes;
     document.getElementById('avg-magnitude').textContent = avgMagnitude.toFixed(2);
-    document.getElementById('max-magnitude').textContent = maxMagnitude.toFixed(2);
+    document.getElementById('max-magnitude').textContent = strongestQuake.properties.mag.toFixed(2);
+    document.getElementById('min-magnitude').textContent = weakestQuake.properties.mag.toFixed(2);
     document.getElementById('most-recent').textContent = mostRecent;
 
-    // Add click event to show most recent earthquake
     document.getElementById('most-recent').onclick = function() {
-        const {coordinates} = mostRecentQuake.geometry;
-        map.setView([coordinates[1], coordinates[0]], 8);
-        L.popup()
-            .setLatLng([coordinates[1], coordinates[0]])
-            .setContent(`
-                <b>Most Recent Earthquake</b><br>
-                Magnitude: ${mostRecentQuake.properties.mag}<br>
-                Location: ${mostRecentQuake.properties.place}<br>
-                Time: ${moment(mostRecentQuake.properties.time).format('MMMM Do YYYY, h:mm:ss a')}
-            `)
-            .openOn(map);
+        showEarthquakeOnMap(mostRecentQuake, 'Most Recent Earthquake');
+    };
+
+    document.getElementById('max-magnitude').onclick = function() {
+        showEarthquakeOnMap(strongestQuake, 'Strongest Earthquake');
+    };
+
+    document.getElementById('min-magnitude').onclick = function() {
+        showEarthquakeOnMap(weakestQuake, 'Weakest Earthquake');
     };
 }
 
+function showEarthquakeOnMap(quake, title) {
+    const {coordinates} = quake.geometry;
+    map.setView([coordinates[1], coordinates[0]], 8);
+    L.popup()
+        .setLatLng([coordinates[1], coordinates[0]])
+        .setContent(`
+            <b>${title}</b><br>
+            Magnitude: ${quake.properties.mag}<br>
+            Location: ${quake.properties.place}<br>
+            Time: ${moment(quake.properties.time).format('MMMM Do YYYY, h:mm:ss a')}
+        `)
+        .openOn(map);
+}
+
 async function initApp() {
-    allEarthquakes = await getEarthquakeData();
+    const timeSelect = document.getElementById('time-select');
+    const selectedTimeRange = timeSelect.value;
+    allEarthquakes = await getEarthquakeData(selectedTimeRange);
     if (allEarthquakes.length === 0) {
         console.log('No earthquake data received');
         return;
@@ -159,6 +217,23 @@ async function initApp() {
     addEarthquakeMarkers(allEarthquakes);
     initMagnitudeFilter(allEarthquakes);
     initTimeFilter();
+    initSidebarToggle();
+    updateTimeRangeDisplay(selectedTimeRange);
+}
+
+function initSidebarToggle() {
+    const toggleBtn = document.getElementById('toggle-sidebar');
+    const sidebar = document.getElementById('sidebar');
+    const map = document.getElementById('map');
+
+    toggleBtn.addEventListener('click', function() {
+        sidebar.classList.toggle('active');
+        if (sidebar.classList.contains('active')) {
+            map.style.marginRight = '0';
+        } else {
+            map.style.marginRight = '0';
+        }
+    });
 }
 
 initApp();
